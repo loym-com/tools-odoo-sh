@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+set -e
+
+help-table() {
+    local cmd_width=10
+    local opt_width=6
+    local desc_width=40
+    local column="| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n"
+    printf "$column" "Command" "Option" "Description"
+    echo "|$(printf '%*s' $((cmd_width + 2)) '' | tr ' ' '-')|$(printf '%*s' $((opt_width + 2)) '' | tr ' ' '-')|$(printf '%*s' $((desc_width + 2)) '' | tr ' ' '-')|"
+    printf "$column" "help" "[grep]" "Show help for commands."
+    printf "$column" "install" "" "Setup the local environment."
+    printf "$column" "lint" "" "Run pre-commit and update index.html."
+    printf "$column" "version" "" "Show version of required tools."
+}
+
+help() {
+    echo
+    if [[ -n "$1" ]]; then
+        help-table | grep -i "$1" | column -t -s'|'
+    else
+        echo "task <command> [options]"
+        echo
+        echo "commands:"
+        echo
+        help-table
+    fi
+    echo
+}
+
+# version() {
+#     uv --version
+# }
+
+# install() {
+#     echo "Setup venv and install python dependencies"
+#     uv venv env
+#     source env/bin/activate
+#     uv pip install pre-commit
+# }
+
+# lint() {
+#     source env/bin/activate
+
+#     echo "Run pre-commit"
+#     pre-commit run --all-file
+# }
+
+###########################################################
+
+# DO FIRST TIME
+prepare() {
+    git config --global user.email "henrik@loym.com"
+    git config --global user.name "Henrik Norlin"
+    mkdir -p ~/.ssh
+}
+
+# STAGING: UPDATE ALL SUBMODULES
+update() {
+    first
+    git submodule update --init --remote
+    git commit -am "git submodule update"
+    git push --set-upstream origin Staging
+}
+
+# STAGING: ADD ONE MODULE (not in OCA yet, therefore "beta")
+beta() {
+    first
+    gh_user=$1
+    gh_repo=$2
+    gh_branch=$3
+    module=$4
+    path=beta/.$module
+    ln_target=.$module/$module
+    ln_link=beta/$module
+    url="git@github.com:$gh_user/$gh_repo.git"
+    git submodule add -b $gh_branch $url $path && ln -s $ln_target $ln_link && git add --all && git commit -m "beta $module" && git push --set-upstream origin Staging
+}
+
+submodule() {
+    first
+    gh_user=$1
+    gh_repo=$2
+    gh_branch=$3
+    url="git@github.com:$gh_user/$gh_repo.git"
+    git submodule add -b $gh_branch $url $gh_user/$gh_repo && git add --all && git commit -m "Added $gh_user/$gh_repo $gh_branch" && git push --set-upstream origin Staging
+}
+
+# UPDATE() AND BETA() WILL DO THIS FIRST
+first() {
+    chmod 600 ~/.ssh/id_ed25519
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+    cd ~/src/user
+    git checkout Staging
+}
+
+###########################################################
+
+if declare -f "$1" > /dev/null; then
+    "$1" "${@:2}"
+else
+    case "$1" in
+        all)
+            install
+            lint
+            ;;
+        *)
+            echo "Unknown command: $1"
+            help
+            exit 1
+            ;;
+    esac
+fi
