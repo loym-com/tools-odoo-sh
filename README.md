@@ -11,6 +11,9 @@ How to edit inside odoo.sh
 ```
 cd ~/src/user/loym-com/tools-odoo-sh
 
+# Replace https with git
+git remote set-url origin git@github.com:loym-com/tools-odoo-sh.git
+
 # checkout
 git fetch origin
 git checkout -b main-editable origin/main
