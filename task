@@ -65,7 +65,7 @@ update() {
 }
 
 # STAGING: ADD ONE MODULE (not in OCA yet, therefore "beta")
-beta() {
+add_beta_module() {
     first
     gh_user=$1
     gh_repo=$2
@@ -78,7 +78,7 @@ beta() {
     git submodule add -b $gh_branch $url $path && ln -s $ln_target $ln_link && git add --all && git commit -m "beta $module" && git push --set-upstream origin Staging
 }
 
-submodule() {
+add_submodule() {
     first
     gh_user=$1
     gh_repo=$2
@@ -86,6 +86,30 @@ submodule() {
     url="git@github.com:$gh_user/$gh_repo.git"
     git submodule add -b $gh_branch $url $gh_user/$gh_repo && git add --all && git commit -m "Added $gh_user/$gh_repo $gh_branch" && git push --set-upstream origin Staging
 }
+
+remove_submodule() {
+    first
+    gh_user=$1
+    gh_repo=$2
+    path="$gh_user/$gh_repo"
+
+    # 1. Deinitialize the submodule
+    git submodule deinit -f "$path"
+
+    # 2. Remove the submodule entry from .git/config
+    git rm -f "$path"
+
+    # 3. Remove leftover submodule files
+    rm -rf ".git/modules/$path"
+
+    # 4. Commit the changes
+    git add --all
+    git commit -m "Removed submodule $gh_user/$gh_repo"
+
+    # 5. Push changes
+    git push
+}
+
 
 # UPDATE() AND BETA() WILL DO THIS FIRST
 first() {
