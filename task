@@ -15,6 +15,29 @@ help-table() {
     printf "$column" "version" "" "Show version of required tools."
 }
 
+help-table() {
+    local cmd_width=20
+    local desc_width=50
+    local column="| %-${cmd_width}s | %-${desc_width}s |\n"
+
+    printf "$column" "Command" "Description"
+    echo "|$(printf '%*s' $((cmd_width + 2)) '' | tr ' ' '-')|$(printf '%*s' $((desc_width + 2)) '' | tr ' ' '-')|"
+
+    printf "$column" "help [grep]" "Show help for commands."
+    printf "$column" "git_henrik" "Configure Henrik's global Git settings."
+    printf "$column" "update" "Update all submodules and push Staging branch."
+    printf "$column" "update_all_submodules" "Update all submodules recursively."
+    printf "$column" "update_submodule <name>" "Update a single submodule."
+    printf "$column" "add_submodule <user> <repo> <branch> [name] [path]" "Add a Git submodule."
+    printf "$column" "add_module <submodule> <module>" "Symlink a module from a submodule."
+    printf "$column" "remove_module <submodule> <module>" "Remove symlinked module."
+    printf "$column" "remove_submodule <submodule>" "Remove a Git submodule."
+    printf "$column" "add_beta_module <user> <repo> <branch> <module> <dir>" "Add a 'beta' module."
+    printf "$column" "add_fix_module <user> <rrep> <branch> <module> <dir>" "Add a 'fix' module."
+    printf "$column" "remove_beta_module <submodule> <module>" "Remove beta module + submodule."
+    printf "$column" "remove_fix_module <submodule> <module>" "Remove fix module + submodule."
+}
+
 help() {
     echo
     if [[ -n "$1" ]]; then
@@ -29,95 +52,173 @@ help() {
     echo
 }
 
-# version() {
-#     uv --version
-# }
-
-# install() {
-#     echo "Setup venv and install python dependencies"
-#     uv venv env
-#     source env/bin/activate
-#     uv pip install pre-commit
-# }
-
-# lint() {
-#     source env/bin/activate
-
-#     echo "Run pre-commit"
-#     pre-commit run --all-file
-# }
-
 ###########################################################
 
 # DO FIRST TIME
-prepare() {
+
+git_henrik() {
     git config --global user.email "henrik@loym.com"
     git config --global user.name "Henrik Norlin"
     mkdir -p ~/.ssh
 }
 
-# STAGING: UPDATE ALL SUBMODULES
+# UPDATE
+
 update() {
-    first
-    git submodule update --init --remote
-    git commit -am "git submodule update"
+    update_all_submodules
     git push --set-upstream origin Staging
 }
 
-# STAGING: ADD ONE MODULE (not in OCA yet, therefore "beta")
+update_all_submodules() {
+    _do_first
+    git submodule update --init --remote && \
+    git commit -am "git submodule update"
+}
+
+update_submodule() {
+    _do_first
+    submodule=$1
+    path="$(_get_submodule_path $submodule)"
+
+    git submodule update --init --remote $path && \
+    git commit -am "git submodule update $path"
+}
+
+# STANDARD
+
+add_submodule() {
+    _do_first
+    gh_user=$1
+    gh_repo=$2
+    gh_branch=$3
+    submodule_name="${4:-$(_get_default_submodule_name $gh_user $gh_repo)}"
+    submodule_path="${5:-$(_get_default_submodule_path $submodule_name)}"
+    url=$(_get_url $gh_user $gh_repo)
+
+    git submodule add --name $submodule_name -b $gh_branch $url $submodule_path && \
+    git add --all && \
+    git commit -m "Added $submodule_path"
+}
+
+add_module() {
+    _do_first
+    submodule=$1
+    module=$2
+    path=$(_get_submodule_path $submodule)
+    _check_submodule_path $path
+    IFS='/' read -r dir1 dir2 dir3 <<< "$path"
+    ln_link="$dir1/$dir2/$module"
+    ln_target=$dir3/$module
+
+    ln -s $ln_target $ln_link && \
+    git add --all && \
+    git commit -m "Added module $ln_link"
+}
+
+remove_module() {
+    _do_first
+    submodule=$1
+    module=$2
+    path=$(_get_submodule_path $submodule)
+    _check_submodule_path $path
+    IFS='/' read -r dir1 dir2 dir3 <<< "$path"
+    ln_link="$dir1/$dir2/$module"
+
+    rm $ln_link && \
+    git add --all && \
+    git commit -m "Removed module $ln_link"
+}
+
+remove_submodule() {
+    _do_first
+    submodule=$1
+    path=$(_get_submodule_path $submodule)
+
+    git submodule deinit -f "$path" && \
+    git rm -f "$path" && \
+    rm -rf ".git/modules/$path" && \
+    git add --all && \
+    git commit -m "Removed submodule $path"
+}
+
+# CUSTOM
+
 add_beta_module() {
-    first
+    # Lowest priority, replace with module in e.g. OCA.
+    _add_custom_module "$@" "z-BETA"
+}
+add_fix_module() {
+    # Highest priority, override module in e.g. OCA.
+    _add_custom_module "$@" "A-FIX"
+}
+_add_custom_module() {
     gh_user=$1
     gh_repo=$2
     gh_branch=$3
     module=$4
-    path=beta/.$module
-    ln_target=.$module/$module
-    ln_link=beta/$module
-    url="git@github.com:$gh_user/$gh_repo.git"
-    git submodule add -b $gh_branch $url $path && ln -s $ln_target $ln_link && git add --all && git commit -m "beta $module" && git push --set-upstream origin Staging
+    dir1=$5
+    submodule_name=$(_get_default_submodule_name $dir1 $module)
+    submodule_path=$(_get_default_submodule_path $dir1 $module)
+    add_submodule $gh_user $gh_repo $gh_branch $submodule_name $submodule_path
+    add_module $submodule_name $module $submodule_path
 }
 
-add_submodule() {
-    first
-    gh_user=$1
-    gh_repo=$2
-    gh_branch=$3
-    url="git@github.com:$gh_user/$gh_repo.git"
-    git submodule add -b $gh_branch $url $gh_user/$gh_repo && git add --all && git commit -m "Added $gh_user/$gh_repo $gh_branch" && git push --set-upstream origin Staging
+remove_beta_module() {
+    _remove_custom_module "$@" "z-BETA"
+}
+remove_fix_module() {
+    _remove_custom_module "$@" "A-FIX"
+}
+_remove_custom_module() {
+    _do_first
+    submodule=$1
+    module=$2
+    remove_module $submodule $module
+    remove_submodule $submodule
 }
 
-remove_submodule() {
-    first
-    gh_user=$1
-    gh_repo=$2
-    path="$gh_user/$gh_repo"
+# LOW-LEVEL
 
-    # 1. Deinitialize the submodule
-    git submodule deinit -f "$path"
-
-    # 2. Remove the submodule entry from .git/config
-    git rm -f "$path"
-
-    # 3. Remove leftover submodule files
-    rm -rf ".git/modules/$path"
-
-    # 4. Commit the changes
-    git add --all
-    git commit -m "Removed submodule $gh_user/$gh_repo"
-
-    # 5. Push changes
-    git push
-}
-
-
-# UPDATE() AND BETA() WILL DO THIS FIRST
-first() {
+_do_first() {
     chmod 600 ~/.ssh/id_ed25519
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/id_ed25519
     cd ~/src/user
     git checkout Staging
+}
+
+_get_url() {
+    gh_user=$1
+    gh_repo=$2
+    echo "git@github.com:$gh_user/$gh_repo.git"
+}
+
+_get_default_submodule_name() {
+    dir1=$1
+    dir2=$2
+    echo "$dir1/$dir2"
+}
+
+_get_default_submodule_path() {
+    dir1=$1
+    dir2=$2
+    echo "$dir1/$dir2/.$dir2"
+}
+
+_get_submodule_path() {
+    submodule=$1
+    path=$(git config --file .gitmodules --get "submodule.${$submodule}.path")
+    echo "$path"
+}
+
+_check_submodule_path() {
+    submodule=$1
+    path=$(_get_submodule_path $submodule)
+    IFS='/' read -r dir1 dir2 dir3 <<< "$path"
+    if [[ $dir3 != .* ]]; then
+        echo "Error: Submodule path $path: dir3 must begin with a dot" >&2
+        exit 1
+    fi
 }
 
 ###########################################################
