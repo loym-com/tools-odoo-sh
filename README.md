@@ -1,3 +1,11 @@
+How to use
+
+```
+ln -s src/user/loym-com/tools-odoo-sh/task ~/task
+
+bash task help
+```
+
 How to edit inside odoo.sh
 
 ```
