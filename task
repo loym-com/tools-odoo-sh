@@ -242,8 +242,7 @@ _get_submodule_path() {
 }
 
 _check_submodule_path() {
-    submodule=$1
-    path=$(_get_submodule_path $submodule)
+    path=$1
     IFS='/' read -r dir1 dir2 dir3 <<< "$path"
     if [[ $dir3 != .* ]]; then
         echo "Error: Submodule path $path: dir3 must begin with a dot" >&2
