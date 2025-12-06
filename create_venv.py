@@ -34,7 +34,7 @@ def create_and_install_venv(version):
         pip_executable = os.path.join(venv_folder, "bin", "pip")
 
     # GH folder
-    gh_folder = os.path.expanduser(f"~/loym/gh/{version}")
+    gh_folder = os.path.expanduser(f"~/loym/gh/{version}/odoo")
 
     # Paths to install requirements from (main folders)
     main_folders = [
