@@ -5,9 +5,9 @@ import sys
 
 """
 USAGE
-python create_odoo_conf.py version key1=value1 key2=value2
+python create_odoo_conf.py project version key1=value1 key2=value2
 EXAMPLE
-python create_odoo_conf.py 18 db_user=odoo db_port=5432
+python create_odoo_conf.py odoo-sh-name 18 db_user=odoo db_port=5432
 """
 
 def parse_gitmodules(file_path):
@@ -22,7 +22,7 @@ def parse_gitmodules(file_path):
         paths.append(match.strip())
     return paths
 
-def create_odoo_conf(version, extra_params):
+def create_odoo_conf(project, version, extra_params):
     # Folder of the script
     script_folder = os.path.dirname(os.path.abspath(__file__))
 
@@ -30,15 +30,21 @@ def create_odoo_conf(version, extra_params):
     odoo_conf_folder = os.path.abspath(os.path.join(script_folder, "../.."))
 
     # gh folder with fixed folders
-    gh_folder = os.path.expanduser(f"~/loym/gh/{version}")
+    gh_folder = os.path.expanduser(f"~/loym/gh/{version}/odoo")
 
     # Default configurations
     defaults = {
         "admin_passwd": "admin",
+        "auth_admin_passkey_password": "admin",
+        "dbfilter": "",
         "db_host": "localhost",
+        "db_name": project,
         "db_port": "5432",
         "db_user": "odoo",
         "db_password": "odoo",
+        "http_interface": "127.0.0.1",
+        "http_port": str(int(version) * 1000),
+        "log_level": "info",
         "xmlrpc_port": str(int(version) * 1000)
     }
 
@@ -58,6 +64,7 @@ def create_odoo_conf(version, extra_params):
 
     # Fixed folders at the very end
     fixed_paths_abs = [
+        os.path.join(gh_folder, "odoo/addons"),
         os.path.join(gh_folder, "enterprise"),
         os.path.join(gh_folder, "design-themes"),
         os.path.join(gh_folder, "industry")
@@ -92,9 +99,10 @@ def main():
         print("Usage: python localhost.py <version> [key=value ...]")
         sys.exit(1)
 
-    version = sys.argv[1]
-    extra_params = sys.argv[2:]
-    create_odoo_conf(version, extra_params)
+    project = sys.argv[1]
+    version = sys.argv[2]
+    extra_params = sys.argv[3:]
+    create_odoo_conf(project, version, extra_params)
 
 if __name__ == "__main__":
     main()
