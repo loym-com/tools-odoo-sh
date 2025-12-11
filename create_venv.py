@@ -4,6 +4,9 @@ import re
 import sys
 import subprocess
 
+from settings import odoo_core_in_submodules
+from settings import github_root
+
 def parse_gitmodules(file_path):
     """Return list of submodule paths from .gitmodules"""
     paths = []
@@ -34,15 +37,18 @@ def create_and_install_venv(version):
         pip_executable = os.path.join(venv_folder, "bin", "pip")
 
     # GH folder
-    gh_folder = os.path.expanduser(f"~/loym/gh/{version}/odoo")
+    gh_folder = os.path.expanduser(f"{github_root}/{version}/odoo")
 
     # Paths to install requirements from (main folders)
-    main_folders = [
-        os.path.join(gh_folder, "odoo"),
-        os.path.join(gh_folder, "enterprise"),
-        os.path.join(gh_folder, "design-themes"),
-        os.path.join(gh_folder, "industry")
-    ]
+    if odoo_core_in_submodules:
+        main_folders = []
+    else:
+        main_folders = [
+            os.path.join(gh_folder, "odoo"),
+            os.path.join(gh_folder, "enterprise"),
+            os.path.join(gh_folder, "design-themes"),
+            os.path.join(gh_folder, "industry")
+        ]
 
     # Submodules from .gitmodules (next to venv folder)
     gitmodules_file = os.path.join(script_folder, "../..", ".gitmodules")

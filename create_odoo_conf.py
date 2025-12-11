@@ -3,6 +3,9 @@ import os
 import re
 import sys
 
+from settings import odoo_core_in_submodules
+from settings import github_root
+
 """
 USAGE
 python create_odoo_conf.py project version key1=value1 key2=value2
@@ -30,7 +33,7 @@ def create_odoo_conf(project, version, extra_params):
     odoo_conf_folder = os.path.abspath(os.path.join(script_folder, "../.."))
 
     # gh folder with fixed folders
-    gh_folder = os.path.expanduser(f"~/loym/gh/{version}/odoo")
+    gh_folder = os.path.expanduser(f"{github_root}/{version}/odoo")
 
     # Default configurations
     defaults = {
@@ -63,12 +66,15 @@ def create_odoo_conf(project, version, extra_params):
     submodule_paths_abs.sort()
 
     # Fixed folders at the very end
-    fixed_paths_abs = [
-        os.path.join(gh_folder, "odoo/addons"),
-        os.path.join(gh_folder, "enterprise"),
-        os.path.join(gh_folder, "design-themes"),
-        os.path.join(gh_folder, "industry")
-    ]
+    if odoo_core_in_submodules:
+        fixed_paths_abs = []
+    else:
+        fixed_paths_abs = [
+            os.path.join(gh_folder, "odoo/addons"),
+            os.path.join(gh_folder, "enterprise"),
+            os.path.join(gh_folder, "design-themes"),
+            os.path.join(gh_folder, "industry")
+        ]
 
     # Combine all addons
     all_addons = submodule_paths_abs + fixed_paths_abs
