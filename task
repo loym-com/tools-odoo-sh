@@ -103,7 +103,8 @@ update() {
 
 update_all_submodules() {
     _do_first
-    git submodule update --init --remote && \
+    git submodule update --init --depth=1 && \
+    git submodule update --remote && \
     git commit -am "git submodule update"
 }
 
