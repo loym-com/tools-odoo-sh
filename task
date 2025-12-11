@@ -314,27 +314,28 @@ update_all_submodules_branch() {
 
     # Parse $project_root/.gitmodules
     while IFS= read -r line; do
-        if [[ $line =~ path[[:space:]]*=[[:space:]]*(.+) ]]; then
+        # Remove leading/trailing whitespace
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+
+        # Submodule path
+        if [[ $line =~ ^path[[:space:]]*=[[:space:]]*(.+)$ ]]; then
             path="${BASH_REMATCH[1]}"
+            branch=""  # reset branch for new submodule
         fi
-        if [[ $line =~ branch[[:space:]]*=[[:space:]]*(.+) ]]; then
+
+        # Branch (optional)
+        if [[ $line =~ ^branch[[:space:]]*=[[:space:]]*(.+)$ ]]; then
             branch="${BASH_REMATCH[1]}"
         fi
-        # Default branch if none specified
-        if [[ -n "$path" && -z "$branch" ]]; then
-            branch="master"
-        fi
+
+        # If path is set, use branch (default master if empty)
         if [[ -n "$path" && -n "$branch" ]]; then
             submodules_branches["$path"]="$branch"
             path=""
             branch=""
         fi
     done < "$project_root/.gitmodules"
-
-    # Loop over all submodules and update
-    for path in "${!submodules_branches[@]}"; do
-        update_submodule_branch "$path" "${submodules_branches[$path]}"
-    done
 
     echo "✅ All submodules updated."
 }
