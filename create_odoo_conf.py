@@ -5,6 +5,7 @@ import sys
 
 from settings import odoo_core_in_submodules
 from settings import github_root
+from settings import project_root
 
 """
 USAGE
@@ -26,11 +27,6 @@ def parse_gitmodules(file_path):
     return paths
 
 def create_odoo_conf(project, version, extra_params):
-    # Folder of the script
-    script_folder = os.path.dirname(os.path.abspath(__file__))
-
-    # odoo.conf folder = two levels above script
-    odoo_conf_folder = os.path.abspath(os.path.join(script_folder, "../.."))
 
     # gh folder with fixed folders
     gh_folder = os.path.expanduser(f"{github_root}/{version}/odoo")
@@ -58,9 +54,9 @@ def create_odoo_conf(project, version, extra_params):
             defaults[key] = value
 
     # Parse submodules from .gitmodules (next to odoo.conf)
-    gitmodules_file = os.path.join(odoo_conf_folder, ".gitmodules")
+    gitmodules_file = os.path.join(project_root, ".gitmodules")
     submodule_paths = parse_gitmodules(gitmodules_file)
-    submodule_paths_abs = [os.path.join(odoo_conf_folder, p) for p in submodule_paths]
+    submodule_paths_abs = [os.path.join(project_root, p) for p in submodule_paths]
 
     # Sort submodules alphabetically (capital-sensitive)
     submodule_paths_abs.sort()
@@ -83,7 +79,7 @@ def create_odoo_conf(project, version, extra_params):
     addons_path_str = ",\n              ".join(all_addons)
 
     # Write odoo.conf
-    conf_file = os.path.join(odoo_conf_folder, "odoo.conf")
+    conf_file = os.path.join(project_root, "odoo.conf")
     os.makedirs(os.path.dirname(conf_file), exist_ok=True)
     with open(conf_file, "w") as f:
         f.write("[options]\n")

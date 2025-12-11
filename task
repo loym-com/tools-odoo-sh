@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+project_root=$(python3 -c "import settings; print(settings.project_root)")
+project_branch=$(python3 -c "import settings; print(settings.project_branch)")
+
 set -e
 
 help-table() {
@@ -13,7 +16,7 @@ help-table() {
     printf "$column" "help [grep]" "Show help for commands."
     printf "$column" "git_henrik" "Configure Henrik's global Git settings."
     printf "$column" "submodules" "List all submodules"
-    printf "$column" "update" "Update all submodules and push Staging branch."
+    printf "$column" "update" "Update all submodules and push $project_branch branch."
     printf "$column" "update_all_submodules" "Update all submodules (recursively)."
     printf "$column" "update_submodule <name>" "Update a single submodule."
     printf "$column" "add_submodule <user> <repo> <branch>" "Add a Git submodule."
@@ -53,7 +56,7 @@ git_henrik() {
 # SHOW SUBMODULES
 
 submodules() {
-    local GITMODULES_FILE="src/user/.gitmodules"
+    local GITMODULES_FILE="$project_root/.gitmodules"
 
     if [[ ! -f "$GITMODULES_FILE" ]]; then
         echo "Error: $GITMODULES_FILE not found."
@@ -95,7 +98,7 @@ submodules() {
 
 update() {
     update_all_submodules
-    git push --set-upstream origin Staging
+    git push --set-upstream origin $project_branch
 }
 
 update_all_submodules() {
@@ -213,8 +216,8 @@ _do_first() {
     chmod 600 ~/.ssh/id_ed25519
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/id_ed25519
-    cd ~/src/user
-    git checkout Staging
+    cd $project_root
+    git checkout $project_branch
 }
 
 _get_url() {
@@ -237,7 +240,7 @@ _get_default_submodule_path() {
 
 _get_submodule_path() {
     submodule=$1
-    path=$(git config --file $HOME/src/user/.gitmodules --get "submodule.${submodule}.path")
+    path=$(git config --file $project_root/.gitmodules --get "submodule.${submodule}.path")
     echo "$path"
 }
 

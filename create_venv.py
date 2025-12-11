@@ -6,6 +6,7 @@ import subprocess
 
 from settings import odoo_core_in_submodules
 from settings import github_root
+from settings import project_root
 
 def parse_gitmodules(file_path):
     """Return list of submodule paths from .gitmodules"""
@@ -20,11 +21,9 @@ def parse_gitmodules(file_path):
     return paths
 
 def create_and_install_venv(version):
-    # Folder of the script
-    script_folder = os.path.dirname(os.path.abspath(__file__))
 
     # Virtual environment folder ../../.venv
-    venv_folder = os.path.abspath(os.path.join(script_folder, "../../.venv"))
+    venv_folder = f"{project_root}/.venv"
 
     # Create virtual environment
     print(f"Creating virtual environment at {venv_folder} ...")
@@ -51,9 +50,8 @@ def create_and_install_venv(version):
         ]
 
     # Submodules from .gitmodules (next to venv folder)
-    gitmodules_file = os.path.join(script_folder, "../..", ".gitmodules")
-    submodule_paths = parse_gitmodules(gitmodules_file)
-    submodule_abs_paths = [os.path.join(script_folder, "../..", p) for p in submodule_paths]
+    submodule_paths = parse_gitmodules(f"{project_root}/.gitmodules")
+    submodule_abs_paths = [os.path.join(project_root, p) for p in submodule_paths]
 
     all_paths = main_folders + submodule_abs_paths
 
