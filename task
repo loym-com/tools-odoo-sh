@@ -271,27 +271,30 @@ update_submodule_branch() {
 
     echo "==> Updating submodule '$path' to branch '$branch'"
 
-    # Initialize submodule if necessary
+    # Always run from superproject root
+    pushd "$project_root" > /dev/null || { echo "Cannot cd to $project_root"; return 1; }
+
+    # Initialize submodule (relative to superproject root)
     git submodule update --init "$path"
 
-    pushd "$path" > /dev/null || { echo "Failed to enter submodule $path"; return 1; }
+    # Enter submodule folder
+    pushd "$path" > /dev/null || { echo "Failed to enter submodule $path"; popd; return 1; }
 
-    # Commit recorded in superproject
+    # Commit recorded by superproject
     local commit_sha
-    commit_sha=$(git rev-parse HEAD)  # HEAD points to the commit superproject expects
+    commit_sha=$(git rev-parse HEAD)
 
-    # Shallow fetch:
-    # 1. Tip of the branch (optional, for later --remote updates)
+    # Shallow fetch branch tip and superproject commit
     git fetch --depth=1 origin "$branch" || true
-
-    # 2. The commit recorded by superproject (guaranteed)
     git fetch --depth=1 origin "$commit_sha"
 
-    # Checkout local branch pointing to the superproject commit
+    # Checkout local branch
     git checkout -B "$branch" "$commit_sha"
 
+    popd > /dev/null  # back to superproject root
     popd > /dev/null
 }
+
 
 
 #########################################
