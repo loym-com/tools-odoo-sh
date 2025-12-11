@@ -168,9 +168,11 @@ remove_submodule() {
     submodule=$1
     path=$(_get_submodule_path $submodule)
 
+    rm -rf "$path/.git" && \
     git submodule deinit -f "$path" && \
     git rm -f "$path" && \
     rm -rf ".git/modules/$path" && \
+    rm -rf "$path" && \
     git add --all && \
     git commit -m "Removed submodule $path"
 }
