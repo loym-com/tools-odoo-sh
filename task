@@ -292,7 +292,7 @@ update_submodule_branch() {
 update_all_submodules_branch() {
     echo "==> Updating all submodules from .gitmodules"
 
-    if [ ! -f .gitmodules ]; then
+    if [ ! -f $project_root/.gitmodules ]; then
         echo "Error: .gitmodules file not found"
         return 1
     fi
@@ -317,7 +317,7 @@ update_all_submodules_branch() {
             path=""
             branch=""
         fi
-    done < .gitmodules
+    done < $project_root/.gitmodules
 
     # Loop and update each submodule
     for path in "${!submodules_branches[@]}"; do
