@@ -256,9 +256,13 @@ _check_submodule_path() {
     fi
 }
 
+#!/usr/bin/env bash
+
 #########################################
-# Use this function to update a single submodule shallowly
-# when it was CLONED SHALLOWLY.
+# Update a single submodule shallowly
+# Ensures the commit recorded in the superproject exists locally
+# Creates a local branch and sets upstream to the remote branch
+# Usage: update_submodule_branch <submodule_path> <branch>
 #########################################
 update_submodule_branch() {
     local path="$1"
@@ -271,35 +275,36 @@ update_submodule_branch() {
 
     echo "==> Updating submodule '$path' to branch '$branch'"
 
-    # Always run from superproject root
+    # Run from superproject root
     pushd "$project_root" > /dev/null || { echo "Cannot cd to $project_root"; return 1; }
 
-    # Initialize submodule (relative to superproject root)
+    # Initialize submodule if needed
     git submodule update --init "$path"
 
     # Enter submodule folder
     pushd "$path" > /dev/null || { echo "Failed to enter submodule $path"; popd; return 1; }
 
-    # Commit recorded by superproject
+    # Commit SHA recorded by superproject
     local commit_sha
     commit_sha=$(git rev-parse HEAD)
 
-    # Shallow fetch branch tip and superproject commit
+    # Shallow fetch the branch tip (optional) and the commit SHA
     git fetch --depth=1 origin "$branch" || true
     git fetch --depth=1 origin "$commit_sha"
 
-    # Checkout local branch
+    # Create or update local branch at the superproject commit
     git checkout -B "$branch" "$commit_sha"
+
+    # Set upstream to remote branch if it exists
+    git branch --set-upstream-to=origin/"$branch" "$branch" 2>/dev/null || true
 
     popd > /dev/null  # back to superproject root
     popd > /dev/null
 }
 
-
-
 #########################################
-# Use this function to update all submodules shallowly
-# when they were CLONED SHALLOWLY.
+# Update all submodules shallowly
+# Reads paths and branches from $project_root/.gitmodules
 #########################################
 update_all_submodules_branch() {
     echo "==> Updating all submodules from $project_root/.gitmodules"
@@ -314,11 +319,11 @@ update_all_submodules_branch() {
 
     # Parse $project_root/.gitmodules
     while IFS= read -r line; do
-        # Remove leading/trailing whitespace
+        # Trim whitespace
         line="${line#"${line%%[![:space:]]*}"}"
         line="${line%"${line##*[![:space:]]}"}"
 
-        # Submodule path
+        # Path
         if [[ $line =~ ^path[[:space:]]*=[[:space:]]*(.+)$ ]]; then
             path="${BASH_REMATCH[1]}"
             branch=""  # reset branch for new submodule
@@ -329,13 +334,21 @@ update_all_submodules_branch() {
             branch="${BASH_REMATCH[1]}"
         fi
 
-        # If path is set, use branch (default master if empty)
-        if [[ -n "$path" && -n "$branch" ]]; then
+        # If path is set, store branch (default master if empty)
+        if [[ -n "$path" ]]; then
+            if [[ -z "$branch" ]]; then
+                branch="master"
+            fi
             submodules_branches["$path"]="$branch"
             path=""
             branch=""
         fi
     done < "$project_root/.gitmodules"
+
+    # Loop over all submodules
+    for path in "${!submodules_branches[@]}"; do
+        update_submodule_branch "$path" "${submodules_branches[$path]}"
+    done
 
     echo "✅ All submodules updated."
 }
