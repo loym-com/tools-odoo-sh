@@ -22,7 +22,7 @@ def parse_gitmodules(file_path):
         paths.append(match.strip())
     return paths
 
-def create_and_install_venv(version="."):
+def create_and_install_venv():
 
     # Virtual environment folder ../../.venv
     venv_folder = f"{project_root}/.venv"
@@ -38,7 +38,7 @@ def create_and_install_venv(version="."):
         pip_executable = os.path.join(venv_folder, "bin", "pip")
 
     # GH folder
-    gh_folder = os.path.expanduser(f"{github_root}/{version}/odoo")
+    gh_folder = os.path.expanduser(f"{github_root}/odoo")
 
     # Paths to install requirements from (main folders)
     if odoo_core_in_submodules:
@@ -71,11 +71,7 @@ def create_and_install_venv(version="."):
     print(f"Activate it with:\nsource {os.path.join(venv_folder, 'bin', 'activate')}")
 
 def main():
-    if len(sys.argv) < 1:
-        print("Usage: python create_venv.py [version]")
-        sys.exit(1)
-    version = sys.argv[1] if len(sys.argv) > 1 else "."
-    create_and_install_venv(version)
+    create_and_install_venv()
 
 if __name__ == "__main__":
     main()

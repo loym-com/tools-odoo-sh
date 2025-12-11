@@ -4,14 +4,14 @@ import re
 import sys
 
 from settings import odoo_core_in_submodules
-from settings import github_root
+from settings import odoo_core_repos_root
 from settings import project_root
 
 """
 USAGE
-python create_odoo_conf.py version key1=value1 key2=value2
+python create_odoo_conf.py key1=value1 key2=value2
 EXAMPLE
-python create_odoo_conf.py 18 db_user=odoo db_port=5432
+python create_odoo_conf.py db_user=odoo db_port=5432
 """
 
 def parse_gitmodules(file_path):
@@ -26,10 +26,7 @@ def parse_gitmodules(file_path):
         paths.append(match.strip())
     return paths
 
-def create_odoo_conf(version, extra_params):
-
-    # gh folder with fixed folders
-    gh_folder = os.path.expanduser(f"{github_root}/{version}/odoo")
+def create_odoo_conf(extra_params):
 
     # Default configurations
     defaults = {
@@ -42,9 +39,9 @@ def create_odoo_conf(version, extra_params):
         "db_user": "odoo",
         "db_password": "odoo",
         "http_interface": "127.0.0.1",
-        "http_port": str(int(version) * 1000),
+        "http_port": "8069",
         "log_level": "info",
-        "xmlrpc_port": str(int(version) * 1000)
+        "xmlrpc_port": "8069"
     }
 
     # Override defaults with user-provided key=value
@@ -66,14 +63,17 @@ def create_odoo_conf(version, extra_params):
         fixed_paths_abs = []
     else:
         fixed_paths_abs = [
-            os.path.join(gh_folder, "odoo/addons"),
-            os.path.join(gh_folder, "enterprise"),
-            os.path.join(gh_folder, "design-themes"),
-            os.path.join(gh_folder, "industry")
+            os.path.join(odoo_core_repos_root, "odoo"),
+            os.path.join(odoo_core_repos_root, "enterprise"),
+            os.path.join(odoo_core_repos_root, "design-themes"),
+            os.path.join(odoo_core_repos_root, "industry")
         ]
 
     # Combine all addons
     all_addons = submodule_paths_abs + fixed_paths_abs
+
+    # Ensure that paths ending with "odoo" get "/addons" appended
+    all_addons = [p + "/addons" if p.endswith("odoo") else p for p in all_addons]
 
     # Format addons_path with line breaks and indentation
     addons_path_str = ",\n              ".join(all_addons)
@@ -101,9 +101,8 @@ def main():
         print("Usage: python localhost.py <version> [key=value ...]")
         sys.exit(1)
 
-    version = sys.argv[1]
-    extra_params = sys.argv[2:]
-    create_odoo_conf(version, extra_params)
+    extra_params = sys.argv[1:]
+    create_odoo_conf(extra_params)
 
 if __name__ == "__main__":
     main()
