@@ -264,26 +264,26 @@ update_submodule_branch() {
     local path="$1"
     local branch="$2"
 
-    if [ -z "$path" ] || [ -z "$branch" ]; then
-        echo "Usage: update_submodule <submodule_path> <branch>"
-        return 1
-    fi
-
     echo "==> Updating submodule '$path' to branch '$branch'"
 
-    # Initialize submodule if necessary
     git submodule update --init "$path"
 
-    pushd "$path" > /dev/null || { echo "Failed to enter submodule $path"; return 1; }
+    pushd "$path" > /dev/null
 
-    # Shallow fetch the branch and create/update remote-tracking branch
-    git fetch --depth=1 origin "$branch":"refs/remotes/origin/$branch"
+    # Get commit recorded in superproject
+    local commit_sha
+    commit_sha=$(git rev-parse HEAD)
 
-    # Checkout local branch pointing to the fetched commit
-    git checkout -B "$branch" "origin/$branch"
+    # Shallow fetch branch tip and the superproject commit
+    git fetch --depth=1 origin "$branch"
+    git fetch --depth=1 origin "$commit_sha"
+
+    # Checkout a local branch pointing to superproject commit
+    git checkout -B "$branch" "$commit_sha"
 
     popd > /dev/null
 }
+
 
 #########################################
 # Use this function to update all submodules shallowly
