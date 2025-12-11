@@ -103,8 +103,7 @@ update() {
 
 update_all_submodules() {
     _do_first
-    git submodule update --init --depth=1 && \
-    git submodule update --remote && \
+    git submodule update --init --remote && \
     git commit -am "git submodule update"
 }
 
@@ -255,6 +254,77 @@ _check_submodule_path() {
         echo "Error: Submodule path $path: dir3 must begin with a dot" >&2
         exit 1
     fi
+}
+
+#########################################
+# Use this function to update a single submodule shallowly
+# when it was CLONED SHALLOWLY.
+#########################################
+update_submodule_branch() {
+    local path="$1"
+    local branch="$2"
+
+    if [ -z "$path" ] || [ -z "$branch" ]; then
+        echo "Usage: update_submodule <submodule_path> <branch>"
+        return 1
+    fi
+
+    echo "==> Updating submodule '$path' to branch '$branch'"
+
+    # Initialize submodule if necessary
+    git submodule update --init "$path"
+
+    pushd "$path" > /dev/null || { echo "Failed to enter submodule $path"; return 1; }
+
+    # Shallow fetch the branch and create/update remote-tracking branch
+    git fetch --depth=1 origin "$branch":"refs/remotes/origin/$branch"
+
+    # Checkout local branch pointing to the fetched commit
+    git checkout -B "$branch" "origin/$branch"
+
+    popd > /dev/null
+}
+
+#########################################
+# Use this function to update all submodules shallowly
+# when they were CLONED SHALLOWLY.
+#########################################
+update_all_submodules_branch() {
+    echo "==> Updating all submodules from .gitmodules"
+
+    if [ ! -f .gitmodules ]; then
+        echo "Error: .gitmodules file not found"
+        return 1
+    fi
+
+    declare -A submodules_branches
+    local path branch
+
+    # Parse .gitmodules
+    while IFS= read -r line; do
+        if [[ $line =~ path[[:space:]]*=[[:space:]]*(.+) ]]; then
+            path="${BASH_REMATCH[1]}"
+        fi
+        if [[ $line =~ branch[[:space:]]*=[[:space:]]*(.+) ]]; then
+            branch="${BASH_REMATCH[1]}"
+        fi
+        # Default branch if none specified
+        if [[ -n "$path" && -z "$branch" ]]; then
+            branch="master"
+        fi
+        if [[ -n "$path" && -n "$branch" ]]; then
+            submodules_branches["$path"]="$branch"
+            path=""
+            branch=""
+        fi
+    done < .gitmodules
+
+    # Loop and update each submodule
+    for path in "${!submodules_branches[@]}"; do
+        update_submodule "$path" "${submodules_branches[$path]}"
+    done
+
+    echo "✅ All submodules updated."
 }
 
 ###########################################################
