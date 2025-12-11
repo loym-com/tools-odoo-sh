@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+project_branch = "Staging"
+
 project_root = Path(__file__).resolve().parents[3]
 
 # github_root is relevant only when odoo core is NOT in submodules.

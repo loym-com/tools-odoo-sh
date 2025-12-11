@@ -9,9 +9,9 @@ from settings import project_root
 
 """
 USAGE
-python create_odoo_conf.py project version key1=value1 key2=value2
+python create_odoo_conf.py version key1=value1 key2=value2
 EXAMPLE
-python create_odoo_conf.py odoo-sh-name 18 db_user=odoo db_port=5432
+python create_odoo_conf.py 18 db_user=odoo db_port=5432
 """
 
 def parse_gitmodules(file_path):
@@ -26,7 +26,7 @@ def parse_gitmodules(file_path):
         paths.append(match.strip())
     return paths
 
-def create_odoo_conf(project, version, extra_params):
+def create_odoo_conf(version, extra_params):
 
     # gh folder with fixed folders
     gh_folder = os.path.expanduser(f"{github_root}/{version}/odoo")
@@ -35,9 +35,9 @@ def create_odoo_conf(project, version, extra_params):
     defaults = {
         "admin_passwd": "admin",
         "auth_admin_passkey_password": "admin",
-        "dbfilter": "",
+        "dbfilter": ".*",
         "db_host": "localhost",
-        "db_name": project,
+        "db_name": project_root.name,
         "db_port": "5432",
         "db_user": "odoo",
         "db_password": "odoo",
@@ -101,10 +101,9 @@ def main():
         print("Usage: python localhost.py <version> [key=value ...]")
         sys.exit(1)
 
-    project = sys.argv[1]
-    version = sys.argv[2]
-    extra_params = sys.argv[3:]
-    create_odoo_conf(project, version, extra_params)
+    version = sys.argv[1]
+    extra_params = sys.argv[2:]
+    create_odoo_conf(version, extra_params)
 
 if __name__ == "__main__":
     main()
