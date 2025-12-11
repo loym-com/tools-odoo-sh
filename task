@@ -127,7 +127,8 @@ add_submodule() {
     submodule_path="${5:-$(_get_default_submodule_path $gh_user $gh_repo)}"
     url=$(_get_url $gh_user $gh_repo)
 
-    git submodule add --name $submodule_name -b $gh_branch $url $submodule_path && \
+    git clone --depth 1 -b $gh_branch $url $submodule_path && \
+    git submodule add --depth 1 --name $submodule_name -b $gh_branch $url $submodule_path && \
     git add --all && \
     git commit -m "Added $submodule_path"
 }
