@@ -1,4 +1,6 @@
-How to use
+# Inside odoo.sh
+
+## How to use
 
 ```
 ln -s src/user/loym-com/tools-odoo-sh/task ~/task
@@ -6,7 +8,7 @@ ln -s src/user/loym-com/tools-odoo-sh/task ~/task
 bash task help
 ```
 
-How to edit inside odoo.sh
+## How to edit
 
 ```
 cd ~/src/user/loym-com/tools-odoo-sh
@@ -28,4 +30,14 @@ git merge origin/main  # optional if remote main changed
 
 # push
 git push -u origin main-editable:main
+```
+
+# On localhost
+
+```
+cp settings_template.py settings.py
+
+
+
+bash task help
 ```

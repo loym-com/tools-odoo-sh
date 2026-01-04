@@ -4,7 +4,7 @@ import re
 import sys
 
 from settings import odoo_core_in_submodules
-from settings import odoo_core_repos_root
+from settings import github_root
 from settings import project_root
 
 """
