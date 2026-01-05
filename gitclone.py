@@ -33,6 +33,11 @@ def get_default_branch(repo_url: str) -> str:
             return line.split()[1].replace("refs/heads/", "")
     raise RuntimeError("Could not determine default branch")
 
+def branch_exists_remotely(repo_url: str, branch: str) -> bool:
+    """Check if a branch exists in the remote repository"""
+    output = run(["git", "ls-remote", "--heads", repo_url, branch], capture=True)
+    return bool(output.strip())
+
 def main():
     parser = argparse.ArgumentParser(description="Clone Git repo with per-branch worktrees")
     parser.add_argument("repo", help="Git repository URL")
@@ -54,6 +59,12 @@ def main():
     # Which branch to checkout
     branch = args.branch or default_branch
     print(f"Branch to checkout: {branch} (default branch: {default_branch})")
+
+    # Check if branch exists remotely if it's not the default
+    if branch != default_branch:
+        if not branch_exists_remotely(args.repo, branch):
+            print(f"Branch '{branch}' does not exist in remote repository.", file=sys.stderr)
+            sys.exit(1)
 
     # --- Handle default branch ---
     default_branch_path = base / default_branch
@@ -79,6 +90,10 @@ def main():
     if branch != default_branch:
         worktree_path = base / branch
         if not worktree_path.exists():
+            print(f"Fetching branch '{branch}'...")
+            run(["git", "fetch", "origin", branch], cwd=default_branch_path)
+            print(f"Creating local branch '{branch}'...")
+            run(["git", "branch", branch, "FETCH_HEAD"], cwd=default_branch_path)
             print(f"Adding worktree for branch '{branch}' at {worktree_path} (shallow)...")
             run([
                 "git", "worktree", "add", str(worktree_path), branch
