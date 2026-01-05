@@ -8,7 +8,9 @@ import subprocess
 from gitclone import main as gitclone_main
 from utils import get_settings, get_submodules, get_repos
 
-def clone_repos(repos):
+def clone_repos(project_dir, repos):
+    search_dir = project_dir / ".local" / "search"
+    search_dir.mkdir(parents=True, exist_ok=True)
     for repo in repos:
         url = repo['url']
         branch = repo['branch']
@@ -116,12 +118,12 @@ def main():
     extra_params = sys.argv[2:]
 
     # Repos
-    submodules = get_submodules(project_dir / ".gitmodules")
+    submodules = get_submodules(project_dir)
     repos = get_repos(project_dir, submodules)
 
     # Call functions
     print("begin clone repos and create symlinks...")
-    clone_repos(repos) # and create search_dir symlinks
+    clone_repos(project_dir, repos) # and create search_dir symlinks
 
     print("begin create odoo.conf...")
     create_odoo_conf(project_dir, repos, extra_params)

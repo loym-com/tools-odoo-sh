@@ -78,7 +78,7 @@ def main():
             str(default_branch_path)
         ])
     else:
-        print(f"Default branch folder exists: {default_branch_path}")
+        pass # print(f"Default branch folder exists: {default_branch_path}")
 
     # Symlink USER/REPO/.git -> default_branch/.git
     git_symlink = base / ".git"
@@ -97,7 +97,7 @@ def main():
                 "git", "worktree", "add", str(worktree_path), branch
             ], cwd=default_branch_path)
         else:
-            print(f"Worktree already exists: {worktree_path}")
+            pass # print(f"Worktree already exists: {worktree_path}")
         os.chdir(worktree_path)
     else:
         os.chdir(default_branch_path)

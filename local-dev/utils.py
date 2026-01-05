@@ -2,6 +2,7 @@ import configparser
 import re
 import sys
 from pathlib import Path
+from pprint import pprint
 
 
 def get_settings(project_dir):
@@ -17,7 +18,6 @@ def get_settings(project_dir):
     Raises:
         FileNotFoundError: If the settings.py file is not found.
     """
-    print(project_dir)
     settings_path = project_dir / ".local" / "settings.py"
     if not settings_path.exists():
         raise FileNotFoundError(f"Settings file not found: {settings_path}")
@@ -59,7 +59,9 @@ def get_repos(project_dir, submodules):
         repos.append(sm)
     repos.extend(get_odoo_core_repos(project_dir))
     for repo in repos:
-        repo['search_dir'] = sanitize_string(project_dir / ".local" / "search" / repo['url'])
+        url_name = repo['url'][4:-4]  # remove 'git@' and '.git'
+        dir_name = f"{sanitize_string(url_name)}-{repo['branch']}"
+        repo['search_dir'] = project_dir / ".local" / "search" / dir_name
     return repos
 
 def get_odoo_core_repos(project_dir):
