@@ -91,7 +91,7 @@ def main():
         worktree_path = base / branch
         if not worktree_path.exists():
             print(f"Fetching branch '{branch}'...")
-            run(["git", "fetch", "origin", f"{branch}:{branch}"], cwd=default_branch_path)
+            run(["git", "fetch", "--depth", "1", "origin", f"{branch}:{branch}"], cwd=default_branch_path)
             print(f"Adding worktree for branch '{branch}' at {worktree_path} (shallow)...")
             run([
                 "git", "worktree", "add", str(worktree_path), branch

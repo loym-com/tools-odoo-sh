@@ -89,9 +89,9 @@ def main():
     settings_dst = local_folder / "settings.py"
     shutil.copy(settings_src, settings_dst)
 
-    # Add PROJECT_VERSION = version
+    # Add ODOO_VERSION = version
     with open(settings_dst, "a") as f:
-        f.write(f'\nPROJECT_VERSION = "{version}"\n')
+        f.write(f'\nODOO_VERSION = "{version}"\n')
 
     # Parse .gitmodules
     gitmodules_path = PROJECT_DIR / ".gitmodules"
