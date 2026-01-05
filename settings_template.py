@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-project_branch = "Staging"
+project_version = "18.0"
 
 project_root = Path(__file__).resolve().parents[3]
 

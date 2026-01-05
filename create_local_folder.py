@@ -52,7 +52,7 @@ def setup_local_folder():
     # Create a minimal odoo.conf
     odoo_conf_path = local_folder / "odoo.conf"
     if not odoo_conf_path.exists():
-        odoo_conf_path.write_text("[options]\naddons_path = addons\n")
+        odoo_conf_path.write_text("[options]\naddons_path = .\n")
         print(f"Created {odoo_conf_path}")
 
     # Parse submodules and create symlinks

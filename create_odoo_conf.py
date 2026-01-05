@@ -79,8 +79,9 @@ def create_odoo_conf(extra_params):
     addons_path_str = ",\n              ".join(all_addons)
 
     # Write odoo.conf
-    conf_file = os.path.join(project_root, "odoo.conf")
-    os.makedirs(os.path.dirname(conf_file), exist_ok=True)
+    local_folder = os.path.join(project_root, ".local")
+    os.makedirs(local_folder, exist_ok=True)
+    conf_file = os.path.join(local_folder, "odoo.conf")
     with open(conf_file, "w") as f:
         f.write("[options]\n")
         # Write configurations sorted alphabetically (except addons_path)
