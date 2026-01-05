@@ -45,10 +45,14 @@ def create_odoo_conf(project_dir, extra_params, submodules):
     
     sys.path.insert(0, str(local_dir))
     try:
-        from settings import GITHUB_DIR
+        from settings import GITHUB_DIR, ODOO_VERSION
     except ImportError:
         print("Could not import GITHUB_DIR from .local/settings.py")
         sys.exit(1)
+
+    # Calculate default port based on Odoo version
+    major_version = int(ODOO_VERSION.split('.')[0])
+    default_port = str(major_version * 1000)
 
     # Default configurations
     defaults = {
@@ -61,9 +65,8 @@ def create_odoo_conf(project_dir, extra_params, submodules):
         "db_user": "odoo",
         "db_password": "odoo",
         "http_interface": "127.0.0.1",
-        "http_port": "8069",
+        "http_port": default_port,
         "log_level": "info",
-        "xmlrpc_port": "8069"
     }
 
     # Override defaults with user-provided key=value

@@ -81,6 +81,9 @@ def create_venv(project_dir):
 
     print("Virtual environment setup complete!")
     print(f"Activate it with:\nsource {venv_folder / 'bin' / 'activate'}")
+    # Automatically activate the virtual environment
+    print("Activating the virtual environment...")
+    subprocess.run(["bash", "-c", f"cd {project_dir} && source .venv/bin/activate && exec bash"])
 
 def main():
     if len(sys.argv) < 2:
