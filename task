@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
-PROJECT_DIR=$(python3 -c "import settings; print(settings.PROJECT_DIR)")
-project_branch=$(python3 -c "import settings; print(settings.project_branch)")
+# PROJECT_DIR: Default to the 3rd parent directory
+: "${PROJECT_DIR:=$(realpath ../../..)}"
+# PROJECT_BRANCH: Default to the active branch of PROJECT_DIR
+: "${PROJECT_BRANCH:=$(git -C "$PROJECT_DIR" rev-parse --abbrev-ref HEAD)}"
+
+# Debugging: Print the environment variables
+echo "PROJECT_DIR: $PROJECT_DIR"
+echo "PROJECT_BRANCH: $PROJECT_BRANCH"
 
 set -e
 
@@ -16,15 +22,15 @@ help-table() {
     printf "$column" "help [grep]" "Show help for commands."
     printf "$column" "git_henrik" "Configure Henrik's global Git settings."
     printf "$column" "submodules" "List all submodules"
-    printf "$column" "update" "Update all submodules and push $project_branch branch."
+    printf "$column" "update" "Update all submodules and push $PROJECT_BRANCH branch."
     printf "$column" "update_all_submodules" "Update all submodules (recursively)."
     printf "$column" "update_submodule <name>" "Update a single submodule."
     printf "$column" "add_submodule <user> <repo> <branch>" "Add a Git submodule."
     printf "$column" "add_module <submodule> <module>" "Symlink a module from a submodule."
     printf "$column" "remove_module <submodule> <module>" "Remove symlinked module."
     printf "$column" "remove_submodule <submodule>" "Remove a Git submodule."
-    printf "$column" "add_beta_module <user> <repo> <branch> <module> <dir>" "Add a 'beta' module."
-    printf "$column" "add_fix_module <user> <rrep> <branch> <module> <dir>" "Add a 'fix' module."
+    printf "$column" "add_beta_module <user> <repo> <branch> <module>" "Add a 'beta' module."
+    printf "$column" "add_fix_module <user> <repo> <branch> <module>" "Add a 'fix' module."
     printf "$column" "remove_beta_module <submodule> <module>" "Remove beta module + submodule."
     printf "$column" "remove_fix_module <submodule> <module>" "Remove fix module + submodule."
 }
@@ -98,7 +104,7 @@ submodules() {
 
 update() {
     update_all_submodules
-    git push --set-upstream origin $project_branch
+    git push --set-upstream origin $PROJECT_BRANCH
 }
 
 update_all_submodules() {
@@ -220,7 +226,7 @@ _do_first() {
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/id_ed25519
     cd $PROJECT_DIR
-    git checkout $project_branch
+    git checkout $PROJECT_BRANCH
 }
 
 _get_url() {

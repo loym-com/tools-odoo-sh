@@ -23,7 +23,7 @@ def clone_repos(project_dir, repos):
             print(f"Creating symbolic link: {search_dir} -> {repo_dir}")
             search_dir.symlink_to(repo_dir, target_is_directory=True)
         else:
-            print(f"Symbolic link already exists: {search_dir}")
+            pass # print(f"Symbolic link already exists: {search_dir}")
 
 def create_odoo_conf(project_dir, repos, extra_params):
     settings = get_settings(project_dir)
@@ -53,10 +53,14 @@ def create_odoo_conf(project_dir, repos, extra_params):
             key, value = kv.split('=', 1)
             defaults[key] = value
 
-    addons_path = [
-        r / "addons" if str(r).endswith(f"odoo/{settings.ODOO_VERSION}") else r
-        for r in repos
-    ]
+    # addons_path
+    addons_path = []
+    for repo in repos:
+        repo_dir = Path(repo["repo_dir"])
+        if str(repo_dir).endswith(f"odoo/{settings.ODOO_VERSION}"):
+            addons_path.append(repo_dir / "addons")
+        else:
+            addons_path.append(repo_dir)
     addons_path_str = ",\n              ".join(map(str, addons_path))
 
     # Write odoo.conf
