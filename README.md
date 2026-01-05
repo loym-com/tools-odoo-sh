@@ -35,7 +35,7 @@ git push -u origin main-editable:main
 # On localhost
 
 ```
-cp settings_template.py settings.py
+cp project_settings.py settings.py
 
 bash task help
 ```
@@ -56,7 +56,7 @@ Tools to test/develop odoo-sh projects locally with minimal disk usage.
 3. Run `python main.py <version>` to set up the local environment.
 
 This will:
-- Copy settings_template.py into .local/settings.py, and add the version.
+- Copy project_settings.py into .local/settings.py, and add the version.
 - Clone odoo-sh submodules into relevant ~/gh/user/repo/branch destinations.
 - Create .venv and install all dependencies. Includes odoo core if not ODOO_CORE_IS_IN_SUBMODULES.
 - Create symlinks in .local for each submodule (and odoo core if applicable).

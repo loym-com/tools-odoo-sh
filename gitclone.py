@@ -45,7 +45,7 @@ def main():
         print(e, file=sys.stderr)
         sys.exit(1)
 
-    base = Path.home() / "gh" / user / repo_name
+    base = Path.home() / "src" / "gh" / user / repo_name
     base.mkdir(parents=True, exist_ok=True)
 
     # Determine default branch first

@@ -13,6 +13,7 @@ from pathlib import Path
 ODOO_CORE_IS_IN_SUBMODULES = True
 
 BASE_DIR = Path.home() / "src"
+
 GITHUB_DIR = BASE_DIR / "gh"
+
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-# PROJECT_VERSION = "18.0"

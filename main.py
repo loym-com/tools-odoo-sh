@@ -6,7 +6,7 @@ import re
 import subprocess
 import os
 
-from settings_template import ODOO_CORE_IS_IN_SUBMODULES, BASE_DIR
+from project_settings import ODOO_CORE_IS_IN_SUBMODULES, BASE_DIR
 
 def run(cmd, cwd=None, capture=False):
     if capture:
@@ -84,8 +84,8 @@ def main():
     local_folder = PROJECT_DIR / ".local"
     local_folder.mkdir(exist_ok=True)
 
-    # Copy settings_template.py to .local/settings.py
-    settings_src = PROJECT_DIR / "settings_template.py"
+    # Copy project_settings.py to .local/settings.py
+    settings_src = PROJECT_DIR / "project_settings.py"
     settings_dst = local_folder / "settings.py"
     shutil.copy(settings_src, settings_dst)
 

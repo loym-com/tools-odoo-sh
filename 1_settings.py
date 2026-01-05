@@ -15,10 +15,10 @@ def main():
     local_dir = project_dir / ".local"
     local_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copy settings_template.py to .local/settings.py
-    settings_template = Path(__file__).parent / "settings_template.py"
+    # Copy project_settings.py to .local/settings.py
+    project_settings = Path(__file__).parent / "project_settings.py"
     settings_dst = local_dir / "settings.py"
-    shutil.copy(settings_template, settings_dst)
+    shutil.copy(project_settings, settings_dst)
 
     # Add PROJECT_VERSION
     with open(settings_dst, "a") as f:
