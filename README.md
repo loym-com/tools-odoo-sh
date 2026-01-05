@@ -58,7 +58,7 @@ Tools to test/develop odoo-sh projects locally with minimal disk usage.
 This will:
 - Copy settings_template.py into .local/settings.py, and add the version.
 - Clone odoo-sh submodules into relevant ~/gh/user/repo/branch destinations.
-- Create .venv and install all dependencies. Includes odoo core if not odoo_core_in_submodules.
+- Create .venv and install all dependencies. Includes odoo core if not ODOO_CORE_IS_IN_SUBMODULES.
 - Create symlinks in .local for each submodule (and odoo core if applicable).
 
 ## Usage

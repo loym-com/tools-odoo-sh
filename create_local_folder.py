@@ -6,7 +6,7 @@ import re
 # Base directory for local repos
 BASE_DIR = Path.home() / "gh"
 # Name of the local helper folder inside the repo
-LOCAL_HELPER_FOLDER = ".local"  # hidden, ignored by Git
+PROJECT_RC_DIR = ".local"  # hidden, ignored by Git
 
 def parse_gitmodules(gitmodules_path):
     """Parse .gitmodules and return a list of submodule dicts with keys: name, path, url, branch"""
@@ -45,7 +45,7 @@ def get_local_submodule_path(submodule):
 def setup_local_folder():
     """Create ignored local folder with odoo.conf and symlinks"""
     repo_root = Path(".").resolve()
-    local_folder = repo_root / LOCAL_HELPER_FOLDER
+    local_folder = repo_root / PROJECT_RC_DIR
     local_folder.mkdir(exist_ok=True)
     print(f"Created local helper folder: {local_folder}")
 
@@ -72,17 +72,17 @@ def setup_local_folder():
 
     # Suggest adding to .gitignore
     gitignore_path = repo_root / ".gitignore"
-    ignore_line = f"/{LOCAL_HELPER_FOLDER}"
+    ignore_line = f"/{PROJECT_RC_DIR}"
     if gitignore_path.exists():
         with open(gitignore_path) as f:
             lines = f.read().splitlines()
         if ignore_line not in lines:
             with open(gitignore_path, "a") as f:
                 f.write(f"\n{ignore_line}\n")
-            print(f"Added {LOCAL_HELPER_FOLDER} to .gitignore")
+            print(f"Added {PROJECT_RC_DIR} to .gitignore")
     else:
-        gitignore_path.write_text(f"{LOCAL_HELPER_FOLDER}\n")
-        print(f"Created .gitignore and added {LOCAL_HELPER_FOLDER}")
+        gitignore_path.write_text(f"{PROJECT_RC_DIR}\n")
+        print(f"Created .gitignore and added {PROJECT_RC_DIR}")
 
 if __name__ == "__main__":
     setup_local_folder()

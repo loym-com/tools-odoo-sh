@@ -4,11 +4,11 @@ import re
 import sys
 import subprocess
 
-from settings import odoo_core_in_submodules
-from settings import github_root
-from settings import project_root as default_project_root
+from settings import ODOO_CORE_IS_IN_SUBMODULES
+from settings import BASE_DIR
+from settings import PROJECT_DIR as default_PROJECT_DIR
 
-print(odoo_core_in_submodules)
+print(ODOO_CORE_IS_IN_SUBMODULES)
 
 def run(cmd, cwd=None, capture=False):
     """Run a shell command"""
@@ -47,14 +47,14 @@ def parse_gitmodules(file_path):
 #         paths.append(match.strip())
 #     return paths
 
-def ensure_submodule_worktree(project_root, path, url):
+def ensure_submodule_worktree(PROJECT_DIR, path, url):
     """
     Ensure the submodule exists as a git worktree.
-    project_root: Path to main repo
+    PROJECT_DIR: Path to main repo
     path: relative path of submodule inside main repo
     url: remote URL of submodule
     """
-    submodule_root = project_root / path
+    submodule_root = PROJECT_DIR / path
     submodule_root.mkdir(parents=True, exist_ok=True)
 
     # If already a git repo, do nothing
@@ -76,23 +76,23 @@ def ensure_submodule_worktree(project_root, path, url):
 
     return submodule_root
 
-def create_and_install_venv(project_root=None):
+def create_and_install_venv(PROJECT_DIR=None):
     """
     Create and install virtualenv.
 
     Parameters:
-        project_root: str or Path (optional)
-            If None, uses settings.project_root.
+        PROJECT_DIR: str or Path (optional)
+            If None, uses settings.PROJECT_DIR.
             Always converted to Path internally.
     """
-    if project_root is None:
-        project_root = default_project_root
+    if PROJECT_DIR is None:
+        PROJECT_DIR = default_PROJECT_DIR
 
     # Convert to Path if not already
-    project_root = Path(project_root)
+    PROJECT_DIR = Path(PROJECT_DIR)
 
     # Virtual environment folder ../../.venv
-    venv_folder = f"{project_root}/.venv"
+    venv_folder = f"{PROJECT_DIR}/.venv"
 
     # Create virtual environment
     print(f"Creating virtual environment at {venv_folder} ...")
@@ -105,10 +105,10 @@ def create_and_install_venv(project_root=None):
         pip_executable = os.path.join(venv_folder, "bin", "pip")
 
     # GH folder
-    gh_folder = os.path.expanduser(f"{github_root}/odoo")
+    gh_folder = os.path.expanduser(f"{BASE_DIR}/odoo")
 
     # Paths to install requirements from (main folders)
-    if odoo_core_in_submodules:
+    if ODOO_CORE_IS_IN_SUBMODULES:
         main_folders = []
     else:
         main_folders = [
@@ -119,8 +119,8 @@ def create_and_install_venv(project_root=None):
         ]
 
     # Submodules from .gitmodules (next to venv folder)
-    submodule_paths = parse_gitmodules(f"{project_root}/.gitmodules")
-    submodule_abs_paths = [os.path.join(project_root, p) for p in submodule_paths]
+    submodule_paths = parse_gitmodules(f"{PROJECT_DIR}/.gitmodules")
+    submodule_abs_paths = [os.path.join(PROJECT_DIR, p) for p in submodule_paths]
 
     all_paths = main_folders + submodule_abs_paths
     print(all_paths)
@@ -142,14 +142,14 @@ def main():
 
     parser = argparse.ArgumentParser(description="Create and install a virtual environment")
     parser.add_argument(
-        "project_root",
+        "PROJECT_DIR",
         nargs="?",
         default=None,
-        help="Path to the project root (defaults to settings.project_root)",
+        help="Path to the project root (defaults to settings.PROJECT_DIR)",
     )
     args = parser.parse_args()
 
-    create_and_install_venv(args.project_root)
+    create_and_install_venv(args.PROJECT_DIR)
 
 if __name__ == "__main__":
     main()

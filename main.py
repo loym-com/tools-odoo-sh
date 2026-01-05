@@ -6,7 +6,7 @@ import re
 import subprocess
 import os
 
-from settings_template import odoo_core_in_submodules, github_root
+from settings_template import ODOO_CORE_IS_IN_SUBMODULES, BASE_DIR
 
 def run(cmd, cwd=None, capture=False):
     if capture:
@@ -80,21 +80,21 @@ def main():
         sys.exit(1)
 
     version = sys.argv[1]
-    project_root = Path.cwd()
-    local_folder = project_root / ".local"
+    PROJECT_DIR = Path.cwd()
+    local_folder = PROJECT_DIR / ".local"
     local_folder.mkdir(exist_ok=True)
 
     # Copy settings_template.py to .local/settings.py
-    settings_src = project_root / "settings_template.py"
+    settings_src = PROJECT_DIR / "settings_template.py"
     settings_dst = local_folder / "settings.py"
     shutil.copy(settings_src, settings_dst)
 
-    # Add project_version = version
+    # Add PROJECT_VERSION = version
     with open(settings_dst, "a") as f:
-        f.write(f'\nproject_version = "{version}"\n')
+        f.write(f'\nPROJECT_VERSION = "{version}"\n')
 
     # Parse .gitmodules
-    gitmodules_path = project_root / ".gitmodules"
+    gitmodules_path = PROJECT_DIR / ".gitmodules"
     submodules = parse_gitmodules(gitmodules_path)
 
     # Clone submodules
@@ -104,7 +104,7 @@ def main():
         clone_repo(url, branch)
 
     # Clone odoo core if not in submodules
-    if not odoo_core_in_submodules:
+    if not ODOO_CORE_IS_IN_SUBMODULES:
         odoo_repos = [
             ("https://github.com/odoo/odoo.git", "odoo"),
             ("https://github.com/odoo/enterprise.git", "enterprise"),
@@ -115,7 +115,7 @@ def main():
             clone_repo(url, version)
 
     # Create .venv
-    venv_folder = project_root / ".venv"
+    venv_folder = PROJECT_DIR / ".venv"
     run([sys.executable, "-m", "venv", str(venv_folder)])
     pip = venv_folder / "bin" / "pip"
 
@@ -127,7 +127,7 @@ def main():
         path = Path.home() / "gh" / user / repo / branch
         paths_to_check.append(path)
 
-    if not odoo_core_in_submodules:
+    if not ODOO_CORE_IS_IN_SUBMODULES:
         for _, name in odoo_repos:
             path = Path.home() / "gh" / "odoo" / name / version
             paths_to_check.append(path)
@@ -147,7 +147,7 @@ def main():
         if not link_path.exists():
             os.symlink(target, link_path)
 
-    if not odoo_core_in_submodules:
+    if not ODOO_CORE_IS_IN_SUBMODULES:
         for _, name in odoo_repos:
             target = Path.home() / "gh" / "odoo" / name / version
             link_path = local_folder / name
@@ -163,7 +163,7 @@ def main():
             "admin_passwd": "admin",
             "dbfilter": ".*",
             "db_host": "localhost",
-            "db_name": project_root.name,
+            "db_name": PROJECT_DIR.name,
             "db_port": "5432",
             "db_user": "odoo",
             "db_password": "odoo",

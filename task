@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-project_root=$(python3 -c "import settings; print(settings.project_root)")
+PROJECT_DIR=$(python3 -c "import settings; print(settings.PROJECT_DIR)")
 project_branch=$(python3 -c "import settings; print(settings.project_branch)")
 
 set -e
@@ -56,7 +56,7 @@ git_henrik() {
 # SHOW SUBMODULES
 
 submodules() {
-    local GITMODULES_FILE="$project_root/.gitmodules"
+    local GITMODULES_FILE="$PROJECT_DIR/.gitmodules"
 
     if [[ ! -f "$GITMODULES_FILE" ]]; then
         echo "Error: $GITMODULES_FILE not found."
@@ -219,7 +219,7 @@ _do_first() {
     chmod 600 ~/.ssh/id_ed25519
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/id_ed25519
-    cd $project_root
+    cd $PROJECT_DIR
     git checkout $project_branch
 }
 
@@ -243,7 +243,7 @@ _get_default_submodule_path() {
 
 _get_submodule_path() {
     submodule=$1
-    path=$(git config --file $project_root/.gitmodules --get "submodule.${submodule}.path")
+    path=$(git config --file $PROJECT_DIR/.gitmodules --get "submodule.${submodule}.path")
     echo "$path"
 }
 
@@ -276,7 +276,7 @@ update_submodule_branch() {
     echo "==> Updating submodule '$path' to branch '$branch'"
 
     # Run from superproject root
-    pushd "$project_root" > /dev/null || { echo "Cannot cd to $project_root"; return 1; }
+    pushd "$PROJECT_DIR" > /dev/null || { echo "Cannot cd to $PROJECT_DIR"; return 1; }
 
     # Initialize submodule if needed
     git submodule update --init "$path"
@@ -304,13 +304,13 @@ update_submodule_branch() {
 
 #########################################
 # Update all submodules shallowly
-# Reads paths and branches from $project_root/.gitmodules
+# Reads paths and branches from $PROJECT_DIR/.gitmodules
 #########################################
 update_all_submodules_branch() {
-    echo "==> Updating all submodules from $project_root/.gitmodules"
+    echo "==> Updating all submodules from $PROJECT_DIR/.gitmodules"
 
-    if [ ! -f "$project_root/.gitmodules" ]; then
-        echo "Error: $project_root/.gitmodules file not found"
+    if [ ! -f "$PROJECT_DIR/.gitmodules" ]; then
+        echo "Error: $PROJECT_DIR/.gitmodules file not found"
         return 1
     fi
 
@@ -343,7 +343,7 @@ update_all_submodules_branch() {
             path=""
             branch=""
         fi
-    done < "$project_root/.gitmodules"
+    done < "$PROJECT_DIR/.gitmodules"
 
     # Loop over all submodules
     for path in "${!submodules_branches[@]}"; do

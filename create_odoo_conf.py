@@ -3,9 +3,9 @@ import os
 import re
 import sys
 
-from settings import odoo_core_in_submodules
-from settings import github_root
-from settings import project_root
+from settings import ODOO_CORE_IS_IN_SUBMODULES
+from settings import BASE_DIR
+from settings import PROJECT_DIR
 
 """
 USAGE
@@ -34,7 +34,7 @@ def create_odoo_conf(extra_params):
         "auth_admin_passkey_password": "admin",
         "dbfilter": ".*",
         "db_host": "localhost",
-        "db_name": project_root.name,
+        "db_name": PROJECT_DIR.name,
         "db_port": "5432",
         "db_user": "odoo",
         "db_password": "odoo",
@@ -51,15 +51,15 @@ def create_odoo_conf(extra_params):
             defaults[key] = value
 
     # Parse submodules from .gitmodules (next to odoo.conf)
-    gitmodules_file = os.path.join(project_root, ".gitmodules")
+    gitmodules_file = os.path.join(PROJECT_DIR, ".gitmodules")
     submodule_paths = parse_gitmodules(gitmodules_file)
-    submodule_paths_abs = [os.path.join(project_root, p) for p in submodule_paths]
+    submodule_paths_abs = [os.path.join(PROJECT_DIR, p) for p in submodule_paths]
 
     # Sort submodules alphabetically (capital-sensitive)
     submodule_paths_abs.sort()
 
     # Fixed folders at the very end
-    if odoo_core_in_submodules:
+    if ODOO_CORE_IS_IN_SUBMODULES:
         fixed_paths_abs = []
     else:
         fixed_paths_abs = [
@@ -79,7 +79,7 @@ def create_odoo_conf(extra_params):
     addons_path_str = ",\n              ".join(all_addons)
 
     # Write odoo.conf
-    local_folder = os.path.join(project_root, ".local")
+    local_folder = os.path.join(PROJECT_DIR, ".local")
     os.makedirs(local_folder, exist_ok=True)
     conf_file = os.path.join(local_folder, "odoo.conf")
     with open(conf_file, "w") as f:
