@@ -40,7 +40,7 @@ def branch_exists_remotely(repo_url: str, branch: str) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="Clone Git repo with per-branch worktrees")
-    parser.add_argument("repo", help="Git repository URL")
+    parser.add_argument("repo", help="Git repository URL (e.g. git@github.com:norlinhenrik/hn-localhost.git)")
     parser.add_argument("-b", "--branch", help="Branch to check out (optional)")
     args = parser.parse_args()
 
