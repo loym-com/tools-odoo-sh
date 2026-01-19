@@ -115,7 +115,7 @@ def create_venv(project_dir, repos):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python 2_odoo_conf.py <PROJECT_DIR> [key=value ...]")
+        print("Usage: python 2_build.py <PROJECT_DIR> [key=value ...]")
         sys.exit(1)
 
     project_dir = Path(sys.argv[1]).resolve()

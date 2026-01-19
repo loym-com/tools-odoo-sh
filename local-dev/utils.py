@@ -66,9 +66,11 @@ def get_repos(project_dir, submodules):
 
 def get_odoo_core_repos(project_dir):
     settings = get_settings(project_dir)
-    from settings import ENTERPRISE
+    from settings import ENTERPRISE, ODOO_VERSION
 
-    names = ['odoo', 'design-themes', 'industry']
+    names = ['odoo', 'design-themes']
+    if int(ODOO_VERSION[:2]) >= 17:
+        names.append('industry')
     if ENTERPRISE:
         names.append('enterprise')
     repos = [
@@ -79,6 +81,8 @@ def get_odoo_core_repos(project_dir):
         }
         for name in names
     ]
+    print("Odoo core repos:")
+    pprint(repos)
     return repos
 
 def get_repo_dir(submodule, project_dir):
