@@ -45,6 +45,8 @@ def create_odoo_conf(project_dir, repos, extra_params):
         "http_interface": "127.0.0.1",
         "http_port": default_port,
         "log_level": "info",
+        "limit_time_cpu": "600",
+        "limit_time_real": "1200",
     }
 
     # Override defaults with user-provided key=value
