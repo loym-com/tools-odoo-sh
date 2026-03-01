@@ -111,6 +111,7 @@ def create_venv(project_dir, repos):
     # Provide next steps for the user
     print("Virtual environment setup complete! Next steps:")
     print("")
+    print(f"cd {project_dir}")
     print("source .venv/bin/activate")
     print(f"python3 {settings.GITHUB_DIR}/odoo/odoo/{settings.ODOO_VERSION}/odoo-bin -c ./.local/odoo.conf")
     print("")
