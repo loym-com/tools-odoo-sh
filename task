@@ -6,8 +6,8 @@
 : "${PROJECT_BRANCH:=$(git -C "$PROJECT_DIR" rev-parse --abbrev-ref HEAD)}"
 
 # Debugging: Print the environment variables
-echo "PROJECT_DIR: $PROJECT_DIR"
-echo "PROJECT_BRANCH: $PROJECT_BRANCH"
+# echo "PROJECT_DIR: $PROJECT_DIR"
+# echo "PROJECT_BRANCH: $PROJECT_BRANCH"
 
 set -e
 
