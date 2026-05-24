@@ -20,11 +20,10 @@ help-table() {
     echo "|$(printf '%*s' $((cmd_width + 2)) '' | tr ' ' '-')|$(printf '%*s' $((desc_width + 2)) '' | tr ' ' '-')|"
 
     printf "$column" "help [grep]" "Show help for commands."
-    printf "$column" "git_henrik" "Configure Henrik's global Git settings."
     printf "$column" "submodules" "List all submodules"
     printf "$column" "update" "Update all submodules and push $PROJECT_BRANCH branch."
     printf "$column" "update_all_submodules" "Update all submodules (recursively)."
-    printf "$column" "update_submodule <name>" "Update a single submodule."
+    printf "$column" "update_submodule <submodule>" "Update a single submodule."
     printf "$column" "add_submodule <user> <repo> <branch>" "Add a Git submodule."
     printf "$column" "add_module <submodule> <module>" "Symlink a module from a submodule."
     printf "$column" "remove_module <submodule> <module>" "Remove symlinked module."
@@ -50,14 +49,6 @@ help() {
 }
 
 ###########################################################
-
-# DO FIRST TIME
-
-git_henrik() {
-    git config --global user.email "henrik@loym.com"
-    git config --global user.name "Henrik Norlin"
-    mkdir -p ~/.ssh
-}
 
 # SHOW SUBMODULES
 

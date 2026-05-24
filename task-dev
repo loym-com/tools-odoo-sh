@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+# PROJECT_DIR: Default to the 3rd parent directory
+: "${PROJECT_DIR:=$(realpath ../../..)}"
+# PROJECT_BRANCH: Default to the active branch of PROJECT_DIR
+: "${PROJECT_BRANCH:=$(git -C "$PROJECT_DIR" rev-parse --abbrev-ref HEAD)}"
+
+# Debugging: Print the environment variables
+# echo "PROJECT_DIR: $PROJECT_DIR"
+# echo "PROJECT_BRANCH: $PROJECT_BRANCH"
+
+set -e
+
+help-table() {
+    local cmd_width=55
+    local desc_width=50
+    local column="| %-${cmd_width}s | %-${desc_width}s |\n"
+
+    printf "$column" "Command" "Description"
+    echo "|$(printf '%*s' $((cmd_width + 2)) '' | tr ' ' '-')|$(printf '%*s' $((desc_width + 2)) '' | tr ' ' '-')|"
+
+    printf "$column" "help [grep]" "Show help for commands."
+    printf "$column" "git_name_email <name> <email>" "Configure Henrik's global Git settings."
+    printf "$column" "dev_fix_module <user> <repo> <branch> <module>" "Add a 'fix' module."
+}
+
+help() {
+    echo
+    if [[ -n "$1" ]]; then
+        help-table | grep -i "$1" | column -t -s'|'
+    else
+        echo "task <command> [options]"
+        echo
+        echo "commands:"
+        echo
+        help-table
+    fi
+    echo
+}
+
+###########################################################
+
+# DO FIRST TIME
+
+git_name_email() {
+    git config --global user.name "$1"
+    git config --global user.email "$2"
+    mkdir -p ~/.ssh
+}
+
+dev_fix_module() {
+    VERSION="19.0"
+    MODULE="res_company_search_view"
+    REPO_1="OCA/multi-company"
+    REPO_2="norlinhenrik/oca-multi-company"
+
+    VERSION=$1 # e.g. 19.0
+    MODULE=$2 # e.g. res_company_search_view
+    REPO_1=$3 # e.g. OCA/multi-company
+    REPO_2=$4 # e.g. norlinhenrik/oca-multi-company
+
+    BRANCH_1="${VERSION}"
+    BRANCH_2="${VERSION}-fix-${MODULE}"
+
+    python local-dev/gitclone.py git@github.com:$REPO_1.git -b $BRANCH_1
+    python local-dev/gitclone.py git@github.com:$REPO_2.git
+
+    cd ~/src/gh/$REPO_2
+    mkdir $BRANCH_2
+    cd $BRANCH_2
+    git init
+    git checkout --orphan $BRANCH_2
+}
+
+###########################################################
+
+if declare -f "$1" > /dev/null; then
+    "$1" "${@:2}"
+else
+    case "$1" in
+        all)
+            install
+            lint
+            ;;
+        *)
+            echo "Unknown command: $1"
+            help
+            exit 1
+            ;;
+    esac
+fi
