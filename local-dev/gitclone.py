@@ -78,7 +78,10 @@ def main():
             str(default_branch_path)
         ])
     else:
-        pass # print(f"Default branch folder exists: {default_branch_path}")
+        # git pull
+        print(f"Worktree for branch '{branch}' already exists at {default_branch_path}, pulling latest changes...")
+        run(["git", "config", "pull.rebase", "false"], cwd=default_branch_path)
+        run(["git", "pull", "origin", default_branch], cwd=default_branch_path)
 
     # Symlink USER/REPO/.git -> default_branch/.git
     git_symlink = base / ".git"
@@ -97,7 +100,10 @@ def main():
                 "git", "worktree", "add", str(worktree_path), branch
             ], cwd=default_branch_path)
         else:
-            pass # print(f"Worktree already exists: {worktree_path}")
+            # git pull in the worktree to update it
+            print(f"Worktree for branch '{branch}' already exists at {worktree_path}, pulling latest changes...")
+            run(["git", "config", "pull.rebase", "false"], cwd=worktree_path)
+            run(["git", "pull", "origin", branch], cwd=worktree_path)
         os.chdir(worktree_path)
     else:
         os.chdir(default_branch_path)
