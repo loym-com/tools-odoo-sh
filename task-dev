@@ -21,7 +21,7 @@ help-table() {
 
     printf "$column" "help [grep]" "Show help for commands."
     printf "$column" "git_name_email <name> <email>" "Configure Henrik's global Git settings."
-    printf "$column" "dev_fix_module <user> <repo> <branch> <module>" "Add a 'fix' module."
+    printf "$column" "dev_fix_module <version> <module> <repo_src> <repo_fix>" "Create a branch to fix a module."
 }
 
 help() {
@@ -48,28 +48,35 @@ git_name_email() {
     mkdir -p ~/.ssh
 }
 
-dev_fix_module() {
-    VERSION="19.0"
-    MODULE="res_company_search_view"
-    REPO_1="OCA/multi-company"
-    REPO_2="norlinhenrik/oca-multi-company"
+run_python_or_fail() {
+    local error_message="$1"
+    shift
 
+    if ! python "$@"; then
+        echo "$error_message" >&2
+        exit 1
+    fi
+}
+
+dev_fix_module() {
     VERSION=$1 # e.g. 19.0
     MODULE=$2 # e.g. res_company_search_view
-    REPO_1=$3 # e.g. OCA/multi-company
-    REPO_2=$4 # e.g. norlinhenrik/oca-multi-company
+    REPO_SRC=$3 # e.g. OCA/multi-company
+    REPO_FIX=$4 # e.g. norlinhenrik/oca-multi-company
 
-    BRANCH_1="${VERSION}"
-    BRANCH_2="${VERSION}-fix-${MODULE}"
+    BRANCH_SRC="${VERSION}"
+    BRANCH_FIX="${VERSION}-fix-${MODULE}"
 
-    python local-dev/gitclone.py git@github.com:$REPO_1.git -b $BRANCH_1
-    python local-dev/gitclone.py git@github.com:$REPO_2.git
+    run_python_or_fail "could not clone $REPO_SRC" local-dev/gitclone.py git@github.com:$REPO_SRC.git -b $BRANCH_SRC
+    run_python_or_fail "could not clone $REPO_FIX" local-dev/gitclone.py git@github.com:$REPO_FIX.git
 
-    cd ~/src/gh/$REPO_2
-    mkdir $BRANCH_2
-    cd $BRANCH_2
-    git init
-    git checkout --orphan $BRANCH_2
+    cd ~/src/gh/$REPO_FIX
+    git worktree add $BRANCH_FIX
+    cd $BRANCH_FIX
+    git rm -rf .
+    cp -r ~/src/gh/$REPO_SRC/$BRANCH_SRC/$MODULE .
+    git add --all
+    git commit -m "Initial commit for $BRANCH_FIX"
 }
 
 ###########################################################
